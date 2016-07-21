@@ -5,11 +5,9 @@ defmodule NewRelixir.Plug.Instrumentation do
 
   @doc """
   Instruments a database call and records the elapsed time.
-
   * `conn` should be a `Plug.Conn` that has been configured by `NewRelixir.Plug.Phoenix`.
   * `action` is the name of the repository method being instrumented.
   * `queryable` is the `Queryable` being passed to the repository.
-
   By default, the query name will be infered from `queryable` and `action`. This can be overriden
   by providing a `:query` option in `opts`.
   """
@@ -44,9 +42,13 @@ defmodule NewRelixir.Plug.Instrumentation do
   defp infer_model(%{__struct__: model_type, __meta__: %Ecto.Schema.Metadata{}}) do
     model_name(model_type)
   end
-
-  defp infer_model(%Ecto.Changeset{model: model}) do
+  # Ecto 1.1 clause
+  defp infer_model(%{model: model}) do
     infer_model(model)
+  end
+  # Ecto 2.0 clause
+  defp infer_model(%{data: data}) do
+    infer_model(data)
   end
 
   defp infer_model(%Ecto.Query{from: {_, model_type}}) do
